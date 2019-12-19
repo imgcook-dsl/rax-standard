@@ -13,9 +13,6 @@ module.exports = function(schema, option) {
   // Classes 
   const classes = [];
 
-  // 1vw = width / 100
-  const _w = option.responsive.width / 100;
-
   const isExpression = (value) => {
     return /^\{\{.*\}\}$/.test(value);
   }
@@ -66,7 +63,7 @@ module.exports = function(schema, option) {
         case 'borderTopRightRadius':
         case 'borderTopLeftRadius':
         case 'borderRadius':
-          style[key] = (parseInt(style[key]) / _w).toFixed(2) + 'vw';
+          style[key] = parseInt(style[key]);
           break;
       }
     }
@@ -218,21 +215,30 @@ module.exports = function(schema, option) {
 
     switch(type) {
       case 'text':
+        if (imports.indexOf(`import Text from 'rax-text'`) === -1) {
+          imports.push(`import Text from 'rax-text'`);
+        }
         const innerText = parseProps(schema.props.text, true);
-        xml = `<span${classString}${props}>${innerText}</span>`;
+        xml = `<Text${classString}${props}>${innerText}</Text>`;
         break;
       case 'image':
+        if (imports.indexOf(`import Image from 'rax-image'`) === -1) {
+          imports.push(`import Image from 'rax-image'`);
+        }
         const source = parseProps(schema.props.src);
-        xml = `<img${classString}${props} src={${source}} />`;
+        xml = `<Image${classString}${props} source={{uri: ${source}}} />`;
         break;
       case 'div':
       case 'page':
       case 'block':
       case 'component':
+        if (imports.indexOf(`import View from 'rax-view'`) === -1) {
+          imports.push(`import View from 'rax-view'`);
+        }
         if (schema.children && schema.children.length) {
-          xml = `<div${classString}${props}>${transform(schema.children)}</div>`;
+          xml = `<View${classString}${props}>${transform(schema.children)}</View>`;
         } else {
-          xml = `<div${classString}${props} />`;
+          xml = `<View${classString}${props} />`;
         }
         break;
     }
@@ -307,7 +313,7 @@ module.exports = function(schema, option) {
             const { params, content } = parseFunction(schema.lifeCycles[name]);
 
             if (name === '_constructor') {
-              lifeCycles.push(`constructor(${params}) { ${content} ${init.join('\n')}}`);
+              lifeCycles.push(`constructor(${params}) { super(); ${content} ${init.join('\n')}}`);
             } else {
               lifeCycles.push(`${name}(${params}) {${content}}`);
             }
@@ -329,6 +335,26 @@ module.exports = function(schema, option) {
     return result;
   };
 
+  // flexDirection -> flex-direction
+  const parseCamelToLine = (string) => {
+    return string.split(/(?=[A-Z])/).join('-').toLowerCase();
+  }
+
+  // style obj -> css
+  const generateCSS = (style) => {
+    let css = '';
+
+    for (let layer in style) {
+      css += `.${layer} {`;
+      for (let key in style[layer]) {
+        css += `${parseCamelToLine(key)}: ${style[layer][key]};\n`
+      }
+      css += '}';
+    }
+
+    return css;
+  };
+
   if (option.utils) {
     Object.keys(option.utils).forEach((name) => {
       utils.push(`const ${name} = ${option.utils[name]}`);
@@ -338,10 +364,13 @@ module.exports = function(schema, option) {
   // start parse schema
   transform(schema);
 
-  const prettierOpt = {
+  const prettierJsOpt = {
     parser: 'babel',
     printWidth: 120,
     singleQuote: true
+  };
+  const prettierCssOpt = {
+    parser: 'css'
   };
 
   return {
@@ -351,19 +380,20 @@ module.exports = function(schema, option) {
         panelValue: prettier.format(`
           'use strict';
 
-          import React, { Component } from 'react';
+          import {createElement, Component, render} from 'rax';
           ${imports.join('\n')}
-          import styles from './style.js';
+          import styles from './style.css';
+
           ${utils.join('\n')}
           ${classes.join('\n')}
-          export default ${schema.componentName}_0;
-        `, prettierOpt),
+          render(<${schema.componentName}_0 />);
+        `, prettierJsOpt),
         panelType: 'js',
       },
       {
-        panelName: `style.js`,
-        panelValue: prettier.format(`export default ${toString(style)}`, prettierOpt),
-        panelType: 'js'
+        panelName: `style.css`,
+        panelValue: prettier.format(`${generateCSS(style)}`, prettierCssOpt),
+        panelType: 'css'
       }
     ],
     noTemplate: true

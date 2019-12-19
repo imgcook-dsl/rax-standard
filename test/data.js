@@ -152,7 +152,6 @@ module.exports = {
           "props": {
             "style": {
               "marginLeft": "4px",
-              "width": "84px",
               "height": "22px",
               "lineHeight": "22px",
               "whiteSpace": "nowrap",
@@ -293,7 +292,6 @@ module.exports = {
           "props": {
             "style": {
               "marginLeft": "6px",
-              "width": "96px",
               "height": "28px",
               "lineHeight": "28px",
               "whiteSpace": "nowrap",
@@ -356,7 +354,6 @@ module.exports = {
           "props": {
             "style": {
               "marginLeft": "5px",
-              "width": "36px",
               "height": "26px",
               "lineHeight": "26px",
               "whiteSpace": "nowrap",
