@@ -197,7 +197,10 @@ module.exports = function(schema, option) {
   // generate render xml
   const generateRender = (schema) => {
     const type = schema.componentName.toLowerCase();
-    const className = schema.props && schema.props.className;
+    let className = schema.props && schema.props.className;
+    if (Number(className) || Number(className) === 0) {
+      className = `style_${className}`;
+    }
     const classString = className ? ` style={styles.${className}}` : '';
 
     if (className) {
