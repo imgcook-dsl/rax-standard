@@ -19,6 +19,12 @@ module.exports = function(schema, option) {
     return /^\{\{.*\}\}$/.test(value);
   }
 
+  const toDecimal = (num) => {
+    const m = Math.round(num * 1000) / 1000;
+    const r = m.toString();
+    return r;
+  }
+
   const toString = (value) => {
     if ({}.toString.call(value) === '[object Function]') {
       return value.toString();
@@ -65,7 +71,7 @@ module.exports = function(schema, option) {
         case 'borderTopRightRadius':
         case 'borderTopLeftRadius':
         case 'borderRadius':
-          style[key] = parseInt(style[key]) * scale;
+          style[key] = toDecimal(parseInt(style[key]) * scale);
           break;
       }
     }
