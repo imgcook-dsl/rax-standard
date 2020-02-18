@@ -13,6 +13,8 @@ module.exports = function(schema, option) {
   // Classes 
   const classes = [];
 
+  const scale = 750 / (option.responsive && option.responsive.width || 750);
+
   const isExpression = (value) => {
     return /^\{\{.*\}\}$/.test(value);
   }
@@ -63,7 +65,7 @@ module.exports = function(schema, option) {
         case 'borderTopRightRadius':
         case 'borderTopLeftRadius':
         case 'borderRadius':
-          style[key] = parseInt(style[key]);
+          style[key] = parseInt(style[key]) * scale;
           break;
       }
     }
