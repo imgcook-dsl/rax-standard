@@ -202,6 +202,28 @@ module.exports = function(schema, option) {
     })`;
   }
 
+  // get children text
+  const getText = schema => {
+    let text = '';
+
+    const getChildrenText = schema => {
+      const type = schema.componentName.toLowerCase();
+      if (type === 'text') {
+        text += parseProps(schema.props.text || schema.text, true).replace(/\{/g, '${');
+      }
+
+      schema.children &&
+        Array.isArray(schema.children) &&
+        schema.children.map(item => {
+          getChildrenText(item);
+        });
+    };
+
+    getChildrenText(schema);
+
+    return text;
+  };
+
   // generate render xml
   const generateRender = (schema) => {
     const type = schema.componentName.toLowerCase();
@@ -222,7 +244,16 @@ module.exports = function(schema, option) {
       if (['className', 'style', 'text', 'src'].indexOf(key) === -1) {
         props += ` ${key}={${parseProps(schema.props[key])}}`;
       }
+      // 无障碍能力
+      if (['onClick'].indexOf(key) === 0) {
+        props += ` accessible={true} aria-label={\`${getText(schema)}\`}`;
+      }
     })
+
+    // 无障碍能力
+    if (type === 'link') {
+      props += ` accessible={true} aria-label={\`${getText(schema)}\`}`;
+    }
 
     switch(type) {
       case 'text':
