@@ -252,7 +252,7 @@ module.exports = function(schema, option) {
 
     // 无障碍能力
     if (type === 'link') {
-      props += ` accessible={true} aria-label={\`${getText(schema)}\`}`;
+      props += ` accessible={true} role="link" aria-label={\`${getText(schema)}\`}`;
     }
 
     switch(type) {
