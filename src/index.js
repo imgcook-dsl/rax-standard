@@ -251,7 +251,7 @@ module.exports = function(schema, option) {
     })
 
     // 无障碍能力
-    if (type === 'link') {
+    if (type === 'link' && !props.match('accessible')) {
       props += ` accessible={true} role="link" aria-label={\`${getText(schema)}\`}`;
     }
 
@@ -283,6 +283,26 @@ module.exports = function(schema, option) {
           xml = `<View${classString}${props} />`;
         }
         break;
+      default:
+        let componentMap = componentsMap[schema.componentName] || {};
+        let packageName = componentMap.package || componentName;
+        const singleImport = `import ${componentName} from '${packageName}'`;
+        if (imports.indexOf(singleImport) === -1) {
+          imports.push(singleImport);
+        }
+        if (
+          schema.children &&
+          schema.children.length &&
+          Array.isArray(schema.children)
+        ) {
+          xml = `<${componentName}${classString}${props}>${transform(
+            schema.children
+          )}</${componentName}>`;
+        } else if (typeof schema.children === 'string') {
+          xml = `<${componentName}${classString}${props} >${schema.children}</${componentName}>`;
+        } else {
+          xml = `<${componentName}${classString}${props} />`;
+        }
     }
 
     if (schema.loop) {
