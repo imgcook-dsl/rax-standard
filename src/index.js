@@ -15,6 +15,22 @@ module.exports = function(schema, option) {
 
   const scale = 750 / (option.responsive && option.responsive.width || 750);
 
+  const transComponentsMap = (compsMap = {}) => {
+    if (!compsMap || !Array.isArray(compsMap.list)) {
+      return [];
+    }
+    const list = compsMap.list;
+    return list.reduce((obj, comp) => {
+      const componentName = comp.name;
+      if (!obj[componentName]) {
+        obj[componentName] = comp;
+      }
+      return obj;
+    }, {});
+  };
+
+  const componentsMap = transComponentsMap(option.componentsMap);
+
   const isExpression = (value) => {
     return /^\{\{.*\}\}$/.test(value);
   }
@@ -284,7 +300,8 @@ module.exports = function(schema, option) {
         }
         break;
       default:
-        let componentMap = componentsMap[schema.componentName] || {};
+        const componentName = schema.componentName;
+        let componentMap = componentsMap[componentName] || {};
         let packageName = componentMap.package || componentName;
         const singleImport = `import ${componentName} from '${packageName}'`;
         if (imports.indexOf(singleImport) === -1) {
