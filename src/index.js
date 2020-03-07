@@ -125,6 +125,10 @@ module.exports = function(schema, option) {
     } else if (typeof value === 'function') {
       const {params, content} = parseFunction(value);
       return `(${params}) => {${content}}`;
+    } else if (typeof value === 'object') {
+      return `${JSON.stringify(value)}`;
+    } else {
+      return value;
     }
   }
 
@@ -283,8 +287,13 @@ module.exports = function(schema, option) {
         if (imports.indexOf(`import Image from 'rax-image'`) === -1) {
           imports.push(`import Image from 'rax-image'`);
         }
-        const source = parseProps(schema.props.src);
-        xml = `<Image${classString}${props} source={{uri: ${source}}} />`;
+        if (schema.props.source && schema.props.source.uri) {
+          xml = `<Image${classString}${props} />`;
+        } else {
+          let source = parseProps(schema.props.src);
+          source = (source && `source={{uri: ${source}}}`) || '';
+          xml = `<Image${classString}${props} ${source} />`;
+        }
         break;
       case 'div':
       case 'page':
