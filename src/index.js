@@ -287,6 +287,9 @@ module.exports = function(schema, option) {
         if (imports.indexOf(`import Image from 'rax-image'`) === -1) {
           imports.push(`import Image from 'rax-image'`);
         }
+        if (!props.match('onClick')) {
+          props += ' aria-hidden={true}';
+        }
         if (schema.props.source && schema.props.source.uri) {
           xml = `<Image${classString}${props} />`;
         } else {
