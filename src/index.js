@@ -251,7 +251,11 @@ module.exports = function(schema, option) {
     if (Number(className) || Number(className) === 0) {
       className = `style_${className}`;
     }
-    const classString = className ? ` style={styles.${className}}` : '';
+    let styleName = `styles.${className}`;
+    if (className && className.match('-')) {
+      styleName = `styles['${className}']`
+    }
+    const classString = className ? ` style={${styleName}}` : '';
 
     if (className) {
       style[className] = parseStyle(schema.props.style);
