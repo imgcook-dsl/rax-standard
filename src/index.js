@@ -257,17 +257,36 @@ module.exports = function(schema, option) {
     }
     const classString = className ? ` style={${styleName}}` : '';
 
+    let styles = {}
+    let codeStyles = {}
+    Object.keys(schema.props.style || {}).forEach(key => {
+      if (isExpression(schema.props.style[key])) {
+        codeStyles[key] = schema.props.style[key]
+      } else {
+        styles[key] = schema.props.style[key]
+      }
+    });
+
+    schema.props.codeStyle = codeStyles;
+
     if (className) {
-      style[className] = parseStyle(schema.props.style);
+      style[className] = parseStyle(styles);
     }
 
     let xml;
     let props = '';
 
     Object.keys(schema.props).forEach((key) => {
-      if (['className', 'style', 'text', 'src'].indexOf(key) === -1) {
+      if (['className', 'style', 'text', 'src', 'codeStyle'].indexOf(key) === -1) {
         props += ` ${key}={${parseProps(schema.props[key])}}`;
       }
+
+      if (key === 'codeStyle') {
+        if(JSON.stringify(schema.props[key]) !== '{}') {
+          props += ` style={${parseProps(schema.props[key])}}`;
+        }
+      }
+
       // 无障碍能力
       if (['onClick'].indexOf(key) === 0) {
         props += ` accessible={true} aria-label={\`${getText(schema)}\`}`;
