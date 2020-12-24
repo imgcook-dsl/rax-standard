@@ -110,13 +110,9 @@ module.exports = function(schema, option) {
   const parseProps = (value, isReactNode) => {
     if (typeof value === 'string') {
       if (isExpression(value)) {
-        if (isReactNode) {
-          return value.slice(1, -1);
-        } else {
-          return value.slice(2, -2);
-        }
+        return parseExpression(value, isReactNode)
       }
-
+  
       if (isReactNode) {
         return value;
       } else {
@@ -125,11 +121,26 @@ module.exports = function(schema, option) {
     } else if (typeof value === 'function') {
       const {params, content} = parseFunction(value);
       return `(${params}) => {${content}}`;
+    } else if (typeof value === 'boolean' || typeof value === 'number') {
+      return String(value)
     } else if (typeof value === 'object') {
-      return `${JSON.stringify(value)}`;
-    } else {
-      return value;
+      if (Array.isArray(value)) {
+        return `[${value.map(v => parseProps(v)).join(', ')}]`
+      }
+      return `{${Object.keys(value).map(key => {
+        return `${/^\w+$/.test(key) ? key :  `'${key}'`}: ${parseProps(value[key])}`
+      }).join(', ')}}`
     }
+  }
+
+  // parse expression
+  const parseExpression = (value, isReactNode) => {
+    if (isReactNode) {
+      value = value.slice(1, -1).replace(/this\./gim, '');
+    } else {
+      value = value.slice(2, -2).replace(/this\./gim, '');
+    }
+    return value
   }
 
   // parse async dataSource
