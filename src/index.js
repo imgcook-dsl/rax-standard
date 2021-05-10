@@ -136,7 +136,11 @@ module.exports = function(schema, option) {
   // parse expression
   const parseExpression = (value, isReactNode) => {
     if (isReactNode) {
-      value = value.slice(1, -1).replace(/this\./gim, '');
+      if (value.match('props')) {
+        value = value.slice(1, -1);
+      } else {
+        value = value.slice(1, -1).replace(/this\./gim, '');
+      }
     } else {
       value = value.slice(2, -2).replace(/this\./gim, '');
     }
@@ -447,7 +451,6 @@ module.exports = function(schema, option) {
 
         render.push(generateRender(schema))
         render.push(`);}`);
-
         classData = classData.concat(states).concat(lifeCycles).concat(methods).concat(render);
         classData.push('}');
 
